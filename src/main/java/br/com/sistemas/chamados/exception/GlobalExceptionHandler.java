@@ -22,10 +22,10 @@ public class GlobalExceptionHandler {
         return montar(HttpStatus.CONFLICT, ex.getMessage(), List.of());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErroResposta> validacao(MethodArgumentNotValidException ex) {
-        List<String> detalhes = ex.getBindingResult().getFieldError().stream()
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<ErroResposta> validacao(MethodArgumentNotValidException ex) {
+//        List<String> detalhes = ex.getBindingResult().getFieldError().stream()
+//    }
 
 
     private ResponseEntity<ErroResposta> montar(HttpStatus status, String erro, List<String> detalhes) {
