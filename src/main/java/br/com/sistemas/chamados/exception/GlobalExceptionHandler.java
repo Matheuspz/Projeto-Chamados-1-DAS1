@@ -22,11 +22,13 @@ public class GlobalExceptionHandler {
         return montar(HttpStatus.CONFLICT, ex.getMessage(), List.of());
     }
 
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<ErroResposta> validacao(MethodArgumentNotValidException ex) {
-//        List<String> detalhes = ex.getBindingResult().getFieldError().stream()
-//    }
-
+    @ExceptionHandler
+    public ResponseEntity<ErroResposta> validacao(MethodArgumentNotValidException ex) {
+        List<String> detalhes = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .toList();
+        return montar(HttpStatus.BAD_REQUEST, "Dados Inválidos", detalhes);
+    }
 
     private ResponseEntity<ErroResposta> montar(HttpStatus status, String erro, List<String> detalhes) {
         return ResponseEntity.status(status)
