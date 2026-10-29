@@ -2,6 +2,9 @@ package br.com.sistemas.chamados.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "categorias")
 public class Categoria {
@@ -12,8 +15,11 @@ public class Categoria {
     @Column(nullable = false, unique = true, length = 100)
     private String nome;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(nullable = false, length = 1000)
     private String descricao;
+
+    @OneToMany(mappedBy = "categoria")
+    private List<Chamado> chamados = new ArrayList<>();
 
     public Categoria() {
     }
@@ -40,6 +46,14 @@ public class Categoria {
     }
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public List<Chamado> getChamados() {
+        return chamados;
+    }
+
+    public void setChamados(List<Chamado> chamados) {
+        this.chamados = chamados;
     }
 }
 

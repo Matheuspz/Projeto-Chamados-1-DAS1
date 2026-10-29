@@ -54,7 +54,7 @@ public class CategoriaService {
         repository.delete(buscarEntity(id));
     }
 
-    private Categoria buscarEntity(Long id) {
+    public Categoria buscarEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "Categoria " + id + " não encontrada"

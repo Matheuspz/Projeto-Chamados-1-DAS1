@@ -3,6 +3,7 @@ package br.com.sistemas.chamados.dto;
 import br.com.sistemas.chamados.enums.Perfil;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record TecnicoRequest(
@@ -15,7 +16,7 @@ public record TecnicoRequest(
         @Email(message = "E-mail inválido")
         String email,
 
-        @NotBlank(message = "Perfil é obrigatório")
+        @NotNull(message = "Perfil é obrigatório")
         Perfil perfil
 ) {
 }

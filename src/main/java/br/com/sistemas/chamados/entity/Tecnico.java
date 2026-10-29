@@ -3,6 +3,9 @@ package br.com.sistemas.chamados.entity;
 import br.com.sistemas.chamados.enums.Perfil;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "tecnicos")
 public class Tecnico {
@@ -20,6 +23,9 @@ public class Tecnico {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Perfil perfil;
+
+    @OneToMany(mappedBy = "tecnico")
+    private List<Chamado> chamados = new ArrayList<>();
 
     public Tecnico() {
     }
@@ -60,5 +66,13 @@ public class Tecnico {
 
     public void setPerfil(Perfil perfil) {
         this.perfil = perfil;
+    }
+
+    public List<Chamado> getChamados() {
+        return chamados;
+    }
+
+    public void setChamados(List<Chamado> chamados) {
+        this.chamados = chamados;
     }
 }

@@ -56,7 +56,7 @@ public class ClienteService {
         repository.delete(buscarEntity(id));
     }
 
-    private Cliente buscarEntity(Long id) {
+    public Cliente buscarEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "Cliente " + id + " não encontrado"));

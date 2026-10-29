@@ -2,6 +2,9 @@ package br.com.sistemas.chamados.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "clientes")
 public class Cliente {
@@ -18,6 +21,9 @@ public class Cliente {
 
     @Column(length = 20)
     private String telefone;
+
+    @OneToMany(mappedBy = "cliente")
+    private List<Chamado> chamados = new ArrayList<>();
 
     public Cliente() {
     }
@@ -58,5 +64,13 @@ public class Cliente {
 
     public void setTelefone(String telefone) {
         this.telefone = telefone;
+    }
+
+    public List<Chamado> getChamados() {
+        return chamados;
+    }
+
+    public void setChamados(List<Chamado> chamados) {
+        this.chamados = chamados;
     }
 }
