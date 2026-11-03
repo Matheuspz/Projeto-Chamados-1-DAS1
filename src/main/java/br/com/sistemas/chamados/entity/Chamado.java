@@ -35,7 +35,7 @@ public class Chamado {
     private StatusChamado status = StatusChamado.ABERTO;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tecnico_id", nullable = false)
+    @JoinColumn(name = "tecnico_id", nullable = true)
     private Tecnico tecnico;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,15 +50,13 @@ public class Chamado {
     }
 
     public Chamado(String titulo, String descricao, Prioridade prioridade,
-                   Tecnico tecnico, Cliente cliente, Categoria categoria) {
+                   Cliente cliente, Categoria categoria) {
         this.titulo = titulo;
         this.descricao = descricao;
         this.prioridade = prioridade;
-        this.tecnico = tecnico;
         this.cliente = cliente;
         this.categoria = categoria;
     }
-
 
     public Long getId() {
         return id;
