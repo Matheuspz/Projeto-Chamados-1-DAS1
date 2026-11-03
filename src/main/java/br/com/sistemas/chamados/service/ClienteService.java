@@ -34,6 +34,7 @@ public class ClienteService {
         return repository.findAll().stream().map(ClienteResponse::de).toList();
     }
 
+
     @Transactional(readOnly = true)
     public ClienteResponse buscar(Long id) {
         return ClienteResponse.de(buscarEntity(id));
