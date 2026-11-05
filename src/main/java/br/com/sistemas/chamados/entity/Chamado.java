@@ -5,6 +5,8 @@ import br.com.sistemas.chamados.enums.StatusChamado;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "chamados")
@@ -45,6 +47,9 @@ public class Chamado {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+
+    @OneToMany(mappedBy = "chamado")
+    private List<Comentario> comentarios = new ArrayList<>();
 
     public Chamado() {
     }
@@ -136,5 +141,13 @@ public class Chamado {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public List<Comentario> getComentarios() {
+        return comentarios;
+    }
+
+    public void setComentarios(List<Comentario> comentarios) {
+        this.comentarios = comentarios;
     }
 }
