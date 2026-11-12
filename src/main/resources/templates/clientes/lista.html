@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'clientes', 'Clientes')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow">CADASTROS</div><h1>Clientes</h1><p>Gerencie os clientes que podem abrir chamados no sistema.</p></div>
+        <a class="btn-primary-custom" th:href="@{/app/clientes/novo}"><i class="bi bi-plus-lg"></i> Novo cliente</a>
+    </div>
+    <section class="panel">
+        <div class="panel-header"><div><h2>Clientes cadastrados</h2><p th:text="${#lists.size(clientes)} + ' cliente(s)'">0 clientes</p></div></div>
+        <div class="panel-body">
+            <div class="entity-card-grid">
+                <article class="entity-card" th:each="cliente : ${clientes}">
+                    <div class="entity-card-top"><div class="entity-avatar"><i class="bi bi-person"></i></div><span class="ticket-id" th:text="|#${cliente.id}|">#1</span></div>
+                    <h3 th:text="${cliente.nome}">Nome do cliente</h3>
+                    <p th:text="${cliente.email}">email@exemplo.com</p>
+                    <div class="entity-meta"><span><i class="bi bi-telephone"></i><span th:text="${cliente.telefone != null && !cliente.telefone.isBlank() ? cliente.telefone : 'Sem telefone'}">Telefone</span></span></div>
+                    <div class="entity-card-actions">
+                        <a class="btn-light-custom" th:href="@{/app/clientes/{id}/editar(id=${cliente.id})}"><i class="bi bi-pencil"></i> Editar</a>
+                        <form method="post" th:action="@{/app/clientes/{id}/excluir(id=${cliente.id})}" onsubmit="return confirm('Deseja realmente excluir este cliente?')">
+                            <button class="btn-light-custom btn-danger-soft" type="submit"><i class="bi bi-trash"></i> Excluir</button>
+                        </form>
+                    </div>
+                </article>
+                <div class="empty-state" th:if="${#lists.isEmpty(clientes)}"><i class="bi bi-people"></i><strong>Nenhum cliente cadastrado</strong><span>Cadastre um cliente para começar a registrar chamados.</span></div>
+            </div>
+        </div>
+    </section>
+</section>
+</body>
+</html>
