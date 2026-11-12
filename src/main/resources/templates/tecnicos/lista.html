@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'tecnicos', 'Técnicos')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow">CADASTROS</div><h1>Técnicos</h1><p>Gerencie os profissionais responsáveis pelo atendimento.</p></div>
+        <a class="btn-primary-custom" th:href="@{/app/tecnicos/novo}"><i class="bi bi-plus-lg"></i> Novo técnico</a>
+    </div>
+    <section class="panel">
+        <div class="panel-header"><div><h2>Técnicos cadastrados</h2><p th:text="${#lists.size(tecnicos)} + ' técnico(s)'">0 técnicos</p></div></div>
+        <div class="panel-body"><div class="entity-card-grid">
+            <article class="entity-card" th:each="tecnico : ${tecnicos}">
+                <div class="entity-card-top"><div class="entity-avatar"><i class="bi bi-person-gear"></i></div><span class="badge-profile" th:classappend="' profile-' + ${#strings.toLowerCase(tecnico.perfil.name())}" th:text="${tecnico.perfil}">TECNICO</span></div>
+                <h3 th:text="${tecnico.nome}">Nome do técnico</h3><p th:text="${tecnico.email}">email@exemplo.com</p>
+                <div class="entity-card-actions">
+                    <a class="btn-light-custom" th:href="@{/app/tecnicos/{id}/editar(id=${tecnico.id})}"><i class="bi bi-pencil"></i> Editar</a>
+                    <form method="post" th:action="@{/app/tecnicos/{id}/excluir(id=${tecnico.id})}" onsubmit="return confirm('Deseja realmente excluir este técnico?')">
+                        <button class="btn-light-custom btn-danger-soft" type="submit"><i class="bi bi-trash"></i> Excluir</button>
+                    </form>
+                </div>
+            </article>
+            <div class="empty-state" th:if="${#lists.isEmpty(tecnicos)}"><i class="bi bi-person-gear"></i><strong>Nenhum técnico cadastrado</strong><span>Cadastre técnicos para atribuir chamados.</span></div>
+        </div></div>
+    </section>
+</section>
+</body>
+</html>

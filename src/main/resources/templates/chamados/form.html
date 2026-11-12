@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'chamados', 'Cadastro de chamado')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow">ATENDIMENTO</div><h1 th:text="${editando ? 'Editar chamado' : 'Novo chamado'}">Novo chamado</h1><p>Informe os dados da solicitação.</p></div>
+        <a class="btn-light-custom" th:href="${editando} ? @{/app/chamados/{id}(id=${registroId})} : @{/app/chamados}"><i class="bi bi-arrow-left"></i> Voltar</a>
+    </div>
+    <section class="panel form-panel">
+        <form th:object="${form}" method="post" th:action="${editando} ? @{/app/chamados/{id}/editar(id=${registroId})} : @{/app/chamados}">
+            <div class="panel-header"><div><h2>Informações do chamado</h2><p>Os campos marcados são obrigatórios.</p></div></div>
+            <div class="panel-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="titulo">Título</label>
+                        <input class="form-control" id="titulo" type="text" maxlength="100" th:field="*{titulo}" th:classappend="${#fields.hasErrors('titulo')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{titulo}"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="descricao">Descrição</label>
+                        <textarea class="form-control" id="descricao" rows="5" maxlength="1000" th:field="*{descricao}" th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
+                        <div class="invalid-feedback" th:errors="*{descricao}"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="prioridade">Prioridade</label>
+                        <select class="form-select" id="prioridade" th:field="*{prioridade}" th:classappend="${#fields.hasErrors('prioridade')} ? 'is-invalid'">
+                            <option value="">Selecione</option><option th:each="opcao : ${prioridadeOptions}" th:value="${opcao}" th:text="${opcao}"></option>
+                        </select><div class="invalid-feedback" th:errors="*{prioridade}"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="clienteId">Cliente</label>
+                        <select class="form-select" id="clienteId" th:field="*{clienteId}" th:classappend="${#fields.hasErrors('clienteId')} ? 'is-invalid'">
+                            <option value="">Selecione</option><option th:each="cliente : ${clientes}" th:value="${cliente.id}" th:text="${cliente.nome}"></option>
+                        </select><div class="invalid-feedback" th:errors="*{clienteId}"></div>
+                        <div class="form-hint" th:if="${#lists.isEmpty(clientes)}">Cadastre um cliente antes de abrir um chamado.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="categoriaId">Categoria</label>
+                        <select class="form-select" id="categoriaId" th:field="*{categoriaId}" th:classappend="${#fields.hasErrors('categoriaId')} ? 'is-invalid'">
+                            <option value="">Selecione</option><option th:each="categoria : ${categorias}" th:value="${categoria.id}" th:text="${categoria.titulo}"></option>
+                        </select><div class="invalid-feedback" th:errors="*{categoriaId}"></div>
+                        <div class="form-hint" th:if="${#lists.isEmpty(categorias)}">Cadastre uma categoria antes de abrir um chamado.</div>
+                    </div>
+                </div>
+                <div class="modal-footer-custom">
+                    <a class="btn-light-custom" th:href="${editando} ? @{/app/chamados/{id}(id=${registroId})} : @{/app/chamados}">Cancelar</a>
+                    <button class="btn-primary-custom" type="submit"><i class="bi bi-check-lg"></i> Salvar chamado</button>
+                </div>
+            </div>
+        </form>
+    </section>
+</section>
+</body>
+</html>

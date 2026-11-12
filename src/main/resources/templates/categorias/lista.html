@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'categorias', 'Categorias')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow">CADASTROS</div><h1>Categorias</h1><p>Organize os chamados por assunto ou tipo de atendimento.</p></div>
+        <a class="btn-primary-custom" th:href="@{/app/categorias/novo}"><i class="bi bi-plus-lg"></i> Nova categoria</a>
+    </div>
+    <section class="panel">
+        <div class="panel-header"><div><h2>Categorias cadastradas</h2><p th:text="${#lists.size(categorias)} + ' categoria(s)'">0 categorias</p></div></div>
+        <div class="panel-body"><div class="entity-card-grid">
+            <article class="entity-card" th:each="categoria : ${categorias}">
+                <div class="entity-card-top"><div class="entity-avatar"><i class="bi bi-tag"></i></div><span class="ticket-id" th:text="|#${categoria.id}|">#1</span></div>
+                <h3 th:text="${categoria.titulo}">Categoria</h3><p class="category-description" th:text="${categoria.descricao}">Descrição da categoria</p>
+                <div class="entity-card-actions">
+                    <a class="btn-light-custom" th:href="@{/app/categorias/{id}/editar(id=${categoria.id})}"><i class="bi bi-pencil"></i> Editar</a>
+                    <form method="post" th:action="@{/app/categorias/{id}/excluir(id=${categoria.id})}" onsubmit="return confirm('Deseja realmente excluir esta categoria?')">
+                        <button class="btn-light-custom btn-danger-soft" type="submit"><i class="bi bi-trash"></i> Excluir</button>
+                    </form>
+                </div>
+            </article>
+            <div class="empty-state" th:if="${#lists.isEmpty(categorias)}"><i class="bi bi-tags"></i><strong>Nenhuma categoria cadastrada</strong><span>Cadastre categorias para classificar chamados.</span></div>
+        </div></div>
+    </section>
+</section>
+</body>
+</html>

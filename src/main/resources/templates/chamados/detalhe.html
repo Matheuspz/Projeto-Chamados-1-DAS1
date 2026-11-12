@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'chamados', 'Detalhes do chamado')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow" th:text="|CHAMADO #${chamado.id}|">CHAMADO #1</div><h1 th:text="${chamado.titulo}">Título do chamado</h1><p>Visualize os dados e gerencie o atendimento desta solicitação.</p></div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn-light-custom" th:href="@{/app/chamados}"><i class="bi bi-arrow-left"></i> Voltar</a>
+            <a class="btn-primary-custom" th:if="${chamado.status.name() != 'FECHADO'}" th:href="@{/app/chamados/{id}/editar(id=${chamado.id})}"><i class="bi bi-pencil"></i> Editar</a>
+        </div>
+    </div>
+    <section class="panel">
+        <div class="panel-header">
+            <div><h2>Detalhes da solicitação</h2><p>Dados registrados para este chamado</p></div>
+            <div class="d-flex gap-2"><span class="badge-status" th:classappend="' status-' + ${#strings.toLowerCase(chamado.status.name())}" th:text="${#strings.replace(chamado.status.name(), '_', ' ')}">ABERTO</span><span class="badge-priority" th:classappend="' priority-' + ${#strings.toLowerCase(chamado.prioridade.name())}" th:text="${chamado.prioridade}">ALTA</span></div>
+        </div>
+        <div class="panel-body">
+            <div class="detail-grid">
+                <div class="detail-item"><small>Cliente</small><strong th:text="${chamado.clienteNome}">Cliente</strong></div>
+                <div class="detail-item"><small>Categoria</small><strong th:text="${chamado.categoriaNome}">Categoria</strong></div>
+                <div class="detail-item"><small>Técnico responsável</small><strong th:text="${chamado.tecnicoNome != null ? chamado.tecnicoNome : 'Não atribuído'}">Não atribuído</strong></div>
+                <div class="detail-item"><small>Data de criação</small><strong th:text="${dataCriacaoFormatada}">01/01/2026 10:00</strong></div>
+                <div class="detail-item" th:if="${chamado.dataFechamento != null}"><small>Data de encerramento</small><strong th:text="${dataFechamentoFormatada}">01/01/2026 11:00</strong></div>
+            </div>
+            <div class="detail-description" th:text="${chamado.descricao}">Descrição do chamado.</div>
+
+            <div class="detail-section" th:if="${chamado.status.name() != 'FECHADO'}">
+                <h3>Gerenciar atendimento</h3>
+                <div class="management-grid">
+                    <form class="management-card" method="post" th:action="@{/app/chamados/{id}/atribuir(id=${chamado.id})}">
+                        <label class="form-label" for="tecnicoId">Atribuir técnico</label>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="tecnicoId" name="tecnicoId" required>
+                                <option value="">Selecione um técnico</option>
+                                <option th:each="tecnico : ${tecnicos}" th:value="${tecnico.id}" th:text="${tecnico.nome}" th:selected="${chamado.tecnicoId == tecnico.id}"></option>
+                            </select>
+                            <button type="submit" class="btn-primary-custom">Atribuir</button>
+                        </div>
+                    </form>
+                    <form class="management-card" method="post" th:action="@{/app/chamados/{id}/status(id=${chamado.id})}">
+                        <label class="form-label" for="status">Atualizar status</label>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="status" name="status" required>
+                                <option th:each="status : ${statusOptions}" th:if="${status.name() != 'FECHADO'}" th:value="${status}" th:text="${#strings.replace(status.name(), '_', ' ')}" th:selected="${chamado.status == status}"></option>
+                            </select>
+                            <button type="submit" class="btn-primary-custom">Atualizar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="detail-actions mt-3">
+                    <form method="post" th:action="@{/app/chamados/{id}/fechar(id=${chamado.id})}" onsubmit="return confirm('Deseja realmente encerrar este chamado?')">
+                        <button type="submit" class="btn-light-custom"><i class="bi bi-check2-circle"></i> Encerrar chamado</button>
+                    </form>
+                    <form method="post" th:action="@{/app/chamados/{id}/excluir(id=${chamado.id})}" onsubmit="return confirm('Deseja realmente excluir este chamado?')">
+                        <button type="submit" class="btn-light-custom btn-danger-soft"><i class="bi bi-trash"></i> Excluir chamado</button>
+                    </form>
+                </div>
+            </div>
+            <div class="detail-section" th:if="${chamado.status.name() == 'FECHADO'}">
+                <p class="text-success small mb-0"><i class="bi bi-check-circle me-1"></i> Este chamado foi encerrado e não permite novas alterações de atendimento.</p>
+                <form class="mt-3" method="post" th:action="@{/app/chamados/{id}/excluir(id=${chamado.id})}" onsubmit="return confirm('Deseja realmente excluir este chamado?')">
+                    <button type="submit" class="btn-light-custom btn-danger-soft"><i class="bi bi-trash"></i> Excluir chamado</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel mt-4">
+        <div class="panel-header">
+            <div>
+                <h2>Comentários</h2>
+                <p>Histórico de mensagens relacionadas a este chamado.</p>
+            </div>
+            <span class="badge text-bg-light" th:text="${#lists.size(chamado.comentarios)} + ' comentário(s)'">0 comentários</span>
+        </div>
+
+        <div class="panel-body">
+            <div th:if="${#lists.isEmpty(chamado.comentarios)}" class="empty-state py-4">
+                <i class="bi bi-chat-left-text"></i>
+                <strong>Nenhum comentário ainda</strong>
+                <span>Seja o primeiro a registrar uma atualização neste chamado.</span>
+            </div>
+
+            <div class="comment-list" th:unless="${#lists.isEmpty(chamado.comentarios)}">
+                <article class="comment-item"
+                         th:each="comentario : ${chamado.comentarios}">
+                    <div class="comment-avatar"
+                         th:text="${#strings.substring(comentario.autor, 0, 1).toUpperCase()}">A</div>
+                    <div class="comment-content">
+                        <div class="comment-heading">
+                            <strong th:text="${comentario.autor}">Autor</strong>
+                            <time th:text="${datasComentarios[comentario.id]}">
+                                12/11/2026 14:30
+                            </time>
+                        </div>
+                        <p class="comment-text" th:text="${comentario.texto}">Texto do comentário.</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="comment-form-wrap">
+                <h3>Adicionar comentário</h3>
+                <form method="post"
+                      th:object="${comentarioForm}"
+                      th:action="@{/app/chamados/{id}/comentarios(id=${chamado.id})}">
+                    <input type="hidden" th:field="*{chamadoId}">
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="comentarioAutor">Autor</label>
+                            <input class="form-control"
+                                   id="comentarioAutor"
+                                   type="text"
+                                   maxlength="100"
+                                   placeholder="Seu nome"
+                                   th:field="*{autor}"
+                                   th:classappend="${#fields.hasErrors('autor')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{autor}"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="comentarioTexto">Comentário</label>
+                            <textarea class="form-control"
+                                      id="comentarioTexto"
+                                      rows="4"
+                                      maxlength="100"
+                                      placeholder="Descreva uma atualização ou informação importante..."
+                                      th:field="*{texto}"
+                                      th:classappend="${#fields.hasErrors('texto')} ? 'is-invalid'"></textarea>
+                            <div class="invalid-feedback" th:errors="*{texto}"></div>
+                            <div class="form-hint">Máximo de 100 caracteres.</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer-custom">
+                        <button class="btn-primary-custom" type="submit">
+                            <i class="bi bi-send"></i> Enviar comentário
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</section>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'tecnicos', 'Cadastro de técnico')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow">CADASTROS</div><h1 th:text="${editando ? 'Editar técnico' : 'Novo técnico'}">Novo técnico</h1><p>Informe os dados e o perfil de acesso do técnico.</p></div>
+        <a class="btn-light-custom" th:href="@{/app/tecnicos}"><i class="bi bi-arrow-left"></i> Voltar</a>
+    </div>
+    <section class="panel form-panel">
+        <form th:object="${form}" method="post" th:action="${editando} ? @{/app/tecnicos/{id}/editar(id=${registroId})} : @{/app/tecnicos}">
+            <div class="panel-header"><div><h2>Dados do técnico</h2><p>Preencha as informações abaixo.</p></div></div>
+            <div class="panel-body"><div class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="nome">Nome</label><input class="form-control" id="nome" type="text" maxlength="100" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"><div class="invalid-feedback" th:errors="*{nome}"></div></div>
+                <div class="col-md-6"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"><div class="invalid-feedback" th:errors="*{email}"></div></div>
+                <div class="col-md-6"><label class="form-label" for="perfil">Perfil</label><select class="form-select" id="perfil" th:field="*{perfil}" th:classappend="${#fields.hasErrors('perfil')} ? 'is-invalid'"><option value="">Selecione</option><option th:each="opcao : ${perfilOptions}" th:value="${opcao}" th:text="${opcao}"></option></select><div class="invalid-feedback" th:errors="*{perfil}"></div></div>
+            </div><div class="modal-footer-custom"><a class="btn-light-custom" th:href="@{/app/tecnicos}">Cancelar</a><button class="btn-primary-custom" type="submit"><i class="bi bi-check-lg"></i> Salvar técnico</button></div></div>
+        </form>
+    </section>
+</section>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'categorias', 'Cadastro de categoria')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow">CADASTROS</div><h1 th:text="${editando ? 'Editar categoria' : 'Nova categoria'}">Nova categoria</h1><p>Defina o nome e a descrição da categoria.</p></div>
+        <a class="btn-light-custom" th:href="@{/app/categorias}"><i class="bi bi-arrow-left"></i> Voltar</a>
+    </div>
+    <section class="panel form-panel">
+        <form th:object="${form}" method="post" th:action="${editando} ? @{/app/categorias/{id}/editar(id=${registroId})} : @{/app/categorias}">
+            <div class="panel-header"><div><h2>Dados da categoria</h2><p>Preencha as informações abaixo.</p></div></div>
+            <div class="panel-body"><div class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="nome">Nome</label><input class="form-control" id="nome" type="text" maxlength="100" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"><div class="invalid-feedback" th:errors="*{nome}"></div></div>
+                <div class="col-12"><label class="form-label" for="descricao">Descrição</label><textarea class="form-control" id="descricao" rows="4" maxlength="1000" th:field="*{descricao}" th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea><div class="invalid-feedback" th:errors="*{descricao}"></div></div>
+            </div><div class="modal-footer-custom"><a class="btn-light-custom" th:href="@{/app/categorias}">Cancelar</a><button class="btn-primary-custom" type="submit"><i class="bi bi-check-lg"></i> Salvar categoria</button></div></div>
+        </form>
+    </section>
+</section>
+</body>
+</html>
