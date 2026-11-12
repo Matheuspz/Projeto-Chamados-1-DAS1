@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section}, 'clientes', 'Cadastro de cliente')}">
+<body>
+<section th:fragment="pageContent">
+    <div class="page-heading">
+        <div><div class="eyebrow">CADASTROS</div><h1 th:text="${editando ? 'Editar cliente' : 'Novo cliente'}">Novo cliente</h1><p>Informe os dados de contato do cliente.</p></div>
+        <a class="btn-light-custom" th:href="@{/app/clientes}"><i class="bi bi-arrow-left"></i> Voltar</a>
+    </div>
+    <section class="panel form-panel">
+        <form th:object="${form}" method="post" th:action="${editando} ? @{/app/clientes/{id}/editar(id=${registroId})} : @{/app/clientes}">
+            <div class="panel-header"><div><h2>Dados do cliente</h2><p>Preencha as informações abaixo.</p></div></div>
+            <div class="panel-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label" for="nome">Nome</label><input class="form-control" id="nome" type="text" maxlength="100" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'"><div class="invalid-feedback" th:errors="*{nome}"></div></div>
+                    <div class="col-md-6"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" type="email" maxlength="120" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"><div class="invalid-feedback" th:errors="*{email}"></div></div>
+                    <div class="col-md-6"><label class="form-label" for="telefone">Telefone</label><input class="form-control" id="telefone" type="text" maxlength="20" th:field="*{telefone}" th:classappend="${#fields.hasErrors('telefone')} ? 'is-invalid'"><div class="invalid-feedback" th:errors="*{telefone}"></div></div>
+                </div>
+                <div class="modal-footer-custom"><a class="btn-light-custom" th:href="@{/app/clientes}">Cancelar</a><button class="btn-primary-custom" type="submit"><i class="bi bi-check-lg"></i> Salvar cliente</button></div>
+            </div>
+        </form>
+    </section>
+</section>
+</body>
+</html>
