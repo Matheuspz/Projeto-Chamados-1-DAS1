@@ -18,7 +18,6 @@ public record ChamadoRequest(
         @NotNull(message = "Prioridade é obrigatório")
         Prioridade prioridade,
 
-        @NotNull(message = "Cliente é obrigatório")
         Long clienteId,
 
         @NotNull(message = "Categoria é obrigatório")

@@ -7,11 +7,14 @@ import br.com.sistemas.chamados.dto.ChamadoStatusRequest;
 import br.com.sistemas.chamados.entity.Categoria;
 import br.com.sistemas.chamados.entity.Chamado;
 import br.com.sistemas.chamados.entity.Cliente;
+import br.com.sistemas.chamados.enums.Papel;
 import br.com.sistemas.chamados.enums.Prioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
+import br.com.sistemas.chamados.security.AutorizacaoChamado;
+import br.com.sistemas.chamados.security.UsuarioAutenticado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,18 +30,27 @@ public class ChamadoService {
     private final TecnicoService tecnicoService;
     private final CategoriaService categoriaService;
     private final ClienteService clienteService;
+    private final AutorizacaoChamado autorizacao;
 
-    ChamadoService(ChamadoRepository repository, TecnicoService tecnicoService, CategoriaService categoriaService, ClienteService clienteService) {
+    ChamadoService(ChamadoRepository repository, TecnicoService tecnicoService, CategoriaService categoriaService, ClienteService clienteService, AutorizacaoChamado autorizacaoChamado) {
         this.repository = repository;
         this.tecnicoService = tecnicoService;
         this.categoriaService = categoriaService;
         this.clienteService = clienteService;
+        this.autorizacao = autorizacaoChamado;
     }
 
     @Transactional
     public ChamadoResponse criar(ChamadoRequest dto) {
 
-        Cliente cliente = clienteService.buscarEntity(dto.clienteId());
+        UsuarioAutenticado usuario = UsuarioAutenticado.atual();
+        Long cid = usuario.papel() == Papel.CLIENTE ? usuario.id() : dto.clienteId();
+
+        if (cid == null) {
+            throw new RegraNegocioException("clienteId é obrigatório para administradores");
+        }
+
+        Cliente cliente = clienteService.buscarEntity(cid);
         Categoria categoria = categoriaService.buscarEntity(dto.categoriaId());
 
         Chamado salvo = repository.save(new Chamado(
@@ -65,12 +77,18 @@ public class ChamadoService {
 
     @Transactional(readOnly = true)
     public ChamadoResponse buscar(Long id) {
-        return ChamadoResponse.de(buscarEntity(id));
+        Chamado chamado = buscarEntity(id);
+        autorizacao.verificar(chamado);
+        return ChamadoResponse.de(chamado);
     }
 
     @Transactional
     public ChamadoResponse atualizar(Long id, ChamadoRequest dto) {
+        if (repository.existsByStatus(StatusChamado.FECHADO)) {
+            throw new RegraNegocioException("Não é possível editar um chamado Fechado");
+        }
         Chamado chamado = buscarEntity(id);
+        autorizacao.verificar(chamado);
         chamado.setTitulo(dto.titulo());
         chamado.setDescricao(dto.descricao());
         chamado.setPrioridade(dto.prioridade());
@@ -85,6 +103,7 @@ public class ChamadoService {
             throw new RegraNegocioException("Não é possível atribuir um Técnico a um chamado Fechado");
         }
         Chamado chamado = buscarEntity(id);
+        autorizacao.verificar(chamado);
         chamado.setTecnico(tecnicoService.buscarEntity(dto.tecnicoId()));
         return ChamadoResponse.de(chamado);
     }
@@ -95,6 +114,7 @@ public class ChamadoService {
             throw new RegraNegocioException("Não é permitido alterar o status para Fechado");
         }
         Chamado chamado = buscarEntity(id);
+        autorizacao.verificar(chamado);
         chamado.setStatus(dto.status());
         return ChamadoResponse.de(chamado);
     }
@@ -102,6 +122,7 @@ public class ChamadoService {
     @Transactional
     public ChamadoResponse fechar(Long id) {
         Chamado chamado = buscarEntity(id);
+        autorizacao.verificar(chamado);
         chamado.setDataFechamento(LocalDateTime.now());
         chamado.setStatus(StatusChamado.FECHADO);
         return ChamadoResponse.de(chamado);
@@ -109,7 +130,9 @@ public class ChamadoService {
 
     @Transactional
     public void excluir(Long id) {
-        repository.delete(buscarEntity(id));
+        Chamado chamado = buscarEntity(id);
+        autorizacao.verificar(chamado);
+        repository.delete(chamado);
     }
 
     public Chamado buscarEntity(Long id) {
