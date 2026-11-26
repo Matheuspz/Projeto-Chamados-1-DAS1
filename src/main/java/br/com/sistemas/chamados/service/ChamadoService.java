@@ -17,6 +17,7 @@ import br.com.sistemas.chamados.security.AutorizacaoChamado;
 import br.com.sistemas.chamados.security.UsuarioAutenticado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,25 +33,28 @@ public class ChamadoService {
     private final ClienteService clienteService;
     private final AutorizacaoChamado autorizacao;
 
-    ChamadoService(ChamadoRepository repository, TecnicoService tecnicoService, CategoriaService categoriaService, ClienteService clienteService, AutorizacaoChamado autorizacaoChamado) {
+    ChamadoService(ChamadoRepository repository, TecnicoService tecnicoService,
+                   CategoriaService categoriaService, ClienteService clienteService,
+                   AutorizacaoChamado autorizacao) {
         this.repository = repository;
         this.tecnicoService = tecnicoService;
         this.categoriaService = categoriaService;
         this.clienteService = clienteService;
-        this.autorizacao = autorizacaoChamado;
+        this.autorizacao = autorizacao;
     }
 
     @Transactional
     public ChamadoResponse criar(ChamadoRequest dto) {
-
-        UsuarioAutenticado usuario = UsuarioAutenticado.atual();
-        Long cid = usuario.papel() == Papel.CLIENTE ? usuario.id() : dto.clienteId();
-
-        if (cid == null) {
-            throw new RegraNegocioException("clienteId é obrigatório para administradores");
+        UsuarioAutenticado u = UsuarioAutenticado.atual();
+        if (u.papel() == Papel.TECNICO) {
+            throw new AccessDeniedException("Sem permissão");
+        }
+        Long clienteId = u.papel() == Papel.CLIENTE ? u.clienteId() : dto.clienteId();
+        if (clienteId == null) {
+            throw new RegraNegocioException("Cliente é obrigatório");
         }
 
-        Cliente cliente = clienteService.buscarEntity(cid);
+        Cliente cliente = clienteService.buscarEntity(clienteId);
         Categoria categoria = categoriaService.buscarEntity(dto.categoriaId());
 
         Chamado salvo = repository.save(new Chamado(
@@ -59,17 +63,33 @@ public class ChamadoService {
                 dto.prioridade(),
                 cliente,
                 categoria
-                ));
+        ));
         return ChamadoResponse.de(salvo);
     }
 
     @Transactional(readOnly = true)
     public Page<ChamadoResponse> listar(StatusChamado status, Prioridade prioridade, Long clienteId, Pageable pageable) {
-        return repository.filtrar(status, prioridade, clienteId, pageable)
+        UsuarioAutenticado u = UsuarioAutenticado.atual();
+        Long filtroCliente = clienteId;
+        Long filtroTecnico = null;
+        if (u.papel() == Papel.CLIENTE) {
+            filtroCliente = u.clienteId();
+        } else if (u.papel() == Papel.TECNICO) {
+            filtroTecnico = u.tecnicoId();
+        }
+        return repository.filtrar(status, prioridade, filtroCliente, filtroTecnico, pageable)
                 .map(ChamadoResponse::de);
     }
+
     @Transactional(readOnly = true)
     public Page<ChamadoResponse> listarPorCliente(Long clienteId, Pageable pageable) {
+        UsuarioAutenticado u = UsuarioAutenticado.atual();
+        if (u.papel() == Papel.TECNICO) {
+            throw new AccessDeniedException("Sem permissão");
+        }
+        if (u.papel() == Papel.CLIENTE && !clienteId.equals(u.clienteId())) {
+            throw new RecursoNaoEncontradoException("Cliente " + clienteId + " não encontrado");
+        }
         clienteService.buscarEntity(clienteId);
         return repository.findByCliente_Id(clienteId, pageable)
                 .map(ChamadoResponse::de);
@@ -77,44 +97,49 @@ public class ChamadoService {
 
     @Transactional(readOnly = true)
     public ChamadoResponse buscar(Long id) {
-        Chamado chamado = buscarEntity(id);
-        autorizacao.verificar(chamado);
-        return ChamadoResponse.de(chamado);
+        return ChamadoResponse.de(buscarEntity(id));
     }
 
     @Transactional
     public ChamadoResponse atualizar(Long id, ChamadoRequest dto) {
-        if (repository.existsByStatus(StatusChamado.FECHADO)) {
-            throw new RegraNegocioException("Não é possível editar um chamado Fechado");
-        }
         Chamado chamado = buscarEntity(id);
-        autorizacao.verificar(chamado);
+        UsuarioAutenticado u = UsuarioAutenticado.atual();
+        if (u.papel() == Papel.TECNICO) {
+            throw new AccessDeniedException("Sem permissão");
+        }
+        if (u.papel() == Papel.CLIENTE && chamado.getStatus() != StatusChamado.ABERTO) {
+            throw new RegraNegocioException("Só é possível editar chamados abertos");
+        }
         chamado.setTitulo(dto.titulo());
         chamado.setDescricao(dto.descricao());
         chamado.setPrioridade(dto.prioridade());
-        chamado.setCliente(clienteService.buscarEntity(dto.clienteId()));
+
         chamado.setCategoria(categoriaService.buscarEntity(dto.categoriaId()));
         return ChamadoResponse.de(chamado);
     }
 
     @Transactional
     public ChamadoResponse atribuirTecnico(Long id, ChamadoAtribuirRequest dto) {
-        if (repository.existsByStatus(StatusChamado.FECHADO)) {
-            throw new RegraNegocioException("Não é possível atribuir um Técnico a um chamado Fechado");
+        if (UsuarioAutenticado.atual().papel() != Papel.ADMIN) {
+            throw new AccessDeniedException("Sem permissão");
         }
         Chamado chamado = buscarEntity(id);
-        autorizacao.verificar(chamado);
+        if (chamado.getStatus() == StatusChamado.FECHADO) {
+            throw new RegraNegocioException("Não é possível atribuir um Técnico a um chamado Fechado");
+        }
         chamado.setTecnico(tecnicoService.buscarEntity(dto.tecnicoId()));
         return ChamadoResponse.de(chamado);
     }
 
     @Transactional
     public ChamadoResponse alterarStatus(Long id, ChamadoStatusRequest dto) {
+        Chamado chamado = buscarEntity(id);
+        if (UsuarioAutenticado.atual().papel() == Papel.CLIENTE) {
+            throw new AccessDeniedException("Sem permissão");
+        }
         if (dto.status().equals(StatusChamado.FECHADO)) {
             throw new RegraNegocioException("Não é permitido alterar o status para Fechado");
         }
-        Chamado chamado = buscarEntity(id);
-        autorizacao.verificar(chamado);
         chamado.setStatus(dto.status());
         return ChamadoResponse.de(chamado);
     }
@@ -122,7 +147,9 @@ public class ChamadoService {
     @Transactional
     public ChamadoResponse fechar(Long id) {
         Chamado chamado = buscarEntity(id);
-        autorizacao.verificar(chamado);
+        if (chamado.getStatus() == StatusChamado.FECHADO) {
+            throw new RegraNegocioException("Chamado já está fechado");
+        }
         chamado.setDataFechamento(LocalDateTime.now());
         chamado.setStatus(StatusChamado.FECHADO);
         return ChamadoResponse.de(chamado);
@@ -130,14 +157,18 @@ public class ChamadoService {
 
     @Transactional
     public void excluir(Long id) {
-        Chamado chamado = buscarEntity(id);
-        autorizacao.verificar(chamado);
-        repository.delete(chamado);
+        if (UsuarioAutenticado.atual().papel() != Papel.ADMIN) {
+            throw new AccessDeniedException("Sem permissão");
+        }
+        repository.delete(buscarEntity(id));
     }
 
     public Chamado buscarEntity(Long id) {
-        return repository.findById(id)
+        Chamado chamado = repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "Chamado " + id + " não encontrado"));
+        autorizacao.verificar(chamado);
+        return chamado;
     }
+
 }

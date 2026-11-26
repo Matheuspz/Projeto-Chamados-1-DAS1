@@ -4,6 +4,7 @@ import br.com.sistemas.chamados.enums.Perfil;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record TecnicoRequest(
@@ -17,6 +18,14 @@ public record TecnicoRequest(
         String email,
 
         @NotNull(message = "Perfil é obrigatório")
-        Perfil perfil
-) {
+        Perfil perfil,
+
+        @Pattern(regexp = "^(.{8,72})?$", message = "Senha deve ter entre 8 e 72 caracteres")
+        String senha
+)
+{
+        @Override
+        public String toString() {
+                return "TecnicoRequest[nome=" + nome + ", email=" + email + ", perfil=" + perfil + "]";
+        }
 }

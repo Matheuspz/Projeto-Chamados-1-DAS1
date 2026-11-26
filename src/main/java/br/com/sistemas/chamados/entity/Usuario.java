@@ -10,26 +10,28 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false)
+    @Column(nullable = false, length = 100)
     private String nome;
 
-    @Column(nullable=false, unique=true)
+    @Column(nullable = false, unique = true, length = 120)
     private String email;
 
-    @Column(nullable=false)
+    @Column(nullable = false, length = 100)
     private String senhaHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false)
+    @Column(nullable = false, length = 10)
     private Papel papel;
 
-    private Long clienteId;   // preenchido se papel = CLIENTE
+    private Long clienteId;
 
-    private Long tecnicoId;   // preenchido se papel = TECNICO
+    private Long tecnicoId;
 
     public Usuario() {
     }
-    public Usuario(String nome, String email, String senhaHash, Papel papel, Long clienteId, Long tecnicoId) {
+
+    public Usuario(String nome, String email, String senhaHash, Papel papel,
+                   Long clienteId, Long tecnicoId) {
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
@@ -38,59 +40,24 @@ public class Usuario {
         this.tecnicoId = tecnicoId;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public String getNome() {
-        return nome;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public String getSenhaHash() { return senhaHash; }
+    public void setSenhaHash(String senhaHash) { this.senhaHash = senhaHash; }
 
-    public String getEmail() {
-        return email;
-    }
+    public Papel getPapel() { return papel; }
+    public void setPapel(Papel papel) { this.papel = papel; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public Long getClienteId() { return clienteId; }
+    public void setClienteId(Long clienteId) { this.clienteId = clienteId; }
 
-    public String getSenhaHash() {
-        return senhaHash;
-    }
-
-    public void setSenhaHash(String senhaHash) {
-        this.senhaHash = senhaHash;
-    }
-
-    public Papel getPapel() {
-        return papel;
-    }
-
-    public void setPapel(Papel papel) {
-        this.papel = papel;
-    }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public Long getTecnicoId() {
-        return tecnicoId;
-    }
-
-    public void setTecnicoId(Long tecnicoId) {
-        this.tecnicoId = tecnicoId;
-    }
+    public Long getTecnicoId() { return tecnicoId; }
+    public void setTecnicoId(Long tecnicoId) { this.tecnicoId = tecnicoId; }
 }

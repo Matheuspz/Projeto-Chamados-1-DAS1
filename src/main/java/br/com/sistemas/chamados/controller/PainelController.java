@@ -119,7 +119,7 @@ public class PainelController {
     public String detalheChamado(@PathVariable("id") Long id, Model model) {
         ChamadoResponse chamado = chamadoService.buscar(id);
         prepararDetalheChamado(model, chamado);
-        model.addAttribute("comentarioForm", new ComentarioRequest("", "", id));
+        model.addAttribute("comentarioForm", new ComentarioRequest("", id));
         return "chamados/detalhe";
     }
 
@@ -133,7 +133,7 @@ public class PainelController {
 
         // O chamado associado vem da URL, evitando confiar no ID enviado pelo formulário.
         ComentarioRequest comentario = new ComentarioRequest(
-                form.texto(), form.autor(), id);
+                form.texto(), id);
 
         if (result.hasErrors()) {
             prepararDetalheChamado(model, chamadoService.buscar(id));
@@ -148,22 +148,6 @@ public class PainelController {
             redirect.addFlashAttribute("error", mensagem(ex));
         }
         return "redirect:/app/chamados/" + id;
-    }
-
-    private void prepararDetalheChamado(Model model, ChamadoResponse chamado) {
-        model.addAttribute("chamado", chamado);
-        Map<Long, String> datasComentarios = chamado.comentarios().stream()
-                .collect(Collectors.toMap(
-                        ComentarioResponse::id,
-                        comentario -> formatarData(comentario.dataCriacao())
-                ));
-        model.addAttribute("datasComentarios", datasComentarios);
-        model.addAttribute("dataCriacaoFormatada", formatarData(chamado.dataCriacao()));
-        model.addAttribute("dataFechamentoFormatada", formatarData(chamado.dataFechamento()));
-        model.addAttribute("tecnicos", tecnicoService.listar());
-        model.addAttribute("statusOptions", StatusChamado.values());
-        model.addAttribute("active", "chamados");
-        model.addAttribute("breadcrumb", "Detalhes do chamado");
     }
 
     @GetMapping("/app/chamados/{id}/editar")
@@ -257,7 +241,7 @@ public class PainelController {
 
     @GetMapping("/app/clientes/novo")
     public String novoCliente(Model model) {
-        prepararFormularioCliente(model, new ClienteRequest("", "", ""), false, null);
+        prepararFormularioCliente(model, new ClienteRequest("", "", "", null), false, null);
         return "clientes/form";
     }
 
@@ -281,7 +265,7 @@ public class PainelController {
     public String editarCliente(@PathVariable("id") Long id, Model model) {
         ClienteResponse cliente = clienteService.buscar(id);
         prepararFormularioCliente(model,
-                new ClienteRequest(cliente.nome(), cliente.email(), cliente.telefone()), true, id);
+                new ClienteRequest(cliente.nome(), cliente.email(), cliente.telefone(), null), true, id);
         return "clientes/form";
     }
 
@@ -323,7 +307,7 @@ public class PainelController {
 
     @GetMapping("/app/tecnicos/novo")
     public String novoTecnico(Model model) {
-        prepararFormularioTecnico(model, new TecnicoRequest("", "", Perfil.TECNICO), false, null);
+        prepararFormularioTecnico(model, new TecnicoRequest("", "", Perfil.TECNICO, null), false, null);
         return "tecnicos/form";
     }
 
@@ -347,7 +331,7 @@ public class PainelController {
     public String editarTecnico(@PathVariable("id") Long id, Model model) {
         TecnicoResponse tecnico = tecnicoService.buscar(id);
         prepararFormularioTecnico(model,
-                new TecnicoRequest(tecnico.nome(), tecnico.email(), tecnico.perfil()), true, id);
+                new TecnicoRequest(tecnico.nome(), tecnico.email(), tecnico.perfil(), null), true, id);
         return "tecnicos/form";
     }
 
@@ -443,6 +427,22 @@ public class PainelController {
             redirect.addFlashAttribute("error", mensagem(ex));
         }
         return "redirect:/app/categorias";
+    }
+
+    private void prepararDetalheChamado(Model model, ChamadoResponse chamado) {
+        model.addAttribute("chamado", chamado);
+        Map<Long, String> datasComentarios = chamado.comentarios().stream()
+                .collect(Collectors.toMap(
+                        ComentarioResponse::id,
+                        comentario -> formatarData(comentario.dataCriacao())
+                ));
+        model.addAttribute("datasComentarios", datasComentarios);
+        model.addAttribute("dataCriacaoFormatada", formatarData(chamado.dataCriacao()));
+        model.addAttribute("dataFechamentoFormatada", formatarData(chamado.dataFechamento()));
+        model.addAttribute("tecnicos", tecnicoService.listar());
+        model.addAttribute("statusOptions", StatusChamado.values());
+        model.addAttribute("active", "chamados");
+        model.addAttribute("breadcrumb", "Detalhes do chamado");
     }
 
     private long contarChamados(StatusChamado status) {

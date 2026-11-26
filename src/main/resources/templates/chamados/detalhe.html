@@ -106,17 +106,6 @@
                     <input type="hidden" th:field="*{chamadoId}">
 
                     <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label" for="comentarioAutor">Autor</label>
-                            <input class="form-control"
-                                   id="comentarioAutor"
-                                   type="text"
-                                   maxlength="100"
-                                   placeholder="Seu nome"
-                                   th:field="*{autor}"
-                                   th:classappend="${#fields.hasErrors('autor')} ? 'is-invalid'">
-                            <div class="invalid-feedback" th:errors="*{autor}"></div>
-                        </div>
                         <div class="col-12">
                             <label class="form-label" for="comentarioTexto">Comentário</label>
                             <textarea class="form-control"
