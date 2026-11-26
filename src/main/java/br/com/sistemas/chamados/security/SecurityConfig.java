@@ -4,6 +4,7 @@ import br.com.sistemas.chamados.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,8 +35,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
         http
+                .securityMatcher("/clientes/**", "/chamados/**", "/tecnicos/**",
+                        "/categorias/**", "/comentarios/**")
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(basic -> basic.authenticationEntryPoint(
@@ -43,8 +47,6 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.accessDeniedHandler(
                         (req, res, ex) -> erro(res, 403, "Acesso negado")))
                 .authorizeHttpRequests(a -> a
-                        // públicos
-                        .requestMatchers("/error", "/css/**", "/js/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/clientes").permitAll()
 
                         // clientes
@@ -68,12 +70,32 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/comentarios/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/comentarios/*").hasRole("ADMIN")
 
-                        // painel web
+                        .anyRequest().authenticated());
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    SecurityFilterChain painelChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(a -> a
+                        .requestMatchers("/login", "/error", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/acesso-negado").authenticated()
+                        .requestMatchers("/meu/**").hasRole("CLIENTE")
                         .requestMatchers("/").hasAnyRole("ADMIN", "TECNICO")
                         .requestMatchers("/app/chamados/**").hasAnyRole("ADMIN", "TECNICO")
                         .requestMatchers("/app/**").hasRole("ADMIN")
-
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/inicio")
+                        .failureUrl("/login?erro"))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?saiu")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID"))
+                .exceptionHandling(e -> e.accessDeniedPage("/acesso-negado"));
         return http.build();
     }
 

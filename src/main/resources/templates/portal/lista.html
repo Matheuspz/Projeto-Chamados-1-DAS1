@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{portal/base :: head('Meus chamados')}"></head>
+<body class="bg-light">
+<header th:replace="~{portal/base :: topo}"></header>
+<div class="container" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 m-0">Meus chamados</h1>
+        <a class="btn btn-primary" th:href="@{/meu/chamados/novo}"><i class="bi bi-plus-lg"></i> Novo chamado</a>
+    </div>
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0">
+                <thead><tr><th>#</th><th>Título</th><th>Categoria</th><th>Prioridade</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${chamados.content}">
+                    <td th:text="${c.id}">1</td>
+                    <td th:text="${c.titulo}">Título</td>
+                    <td th:text="${c.categoriaNome}">Categoria</td>
+                    <td th:text="${c.prioridade}">MEDIA</td>
+                    <td th:text="${#strings.replace(c.status.name(), '_', ' ')}">ABERTO</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" th:href="@{/meu/chamados/{id}(id=${c.id})}">Ver</a></td>
+                </tr>
+                <tr th:if="${chamados.empty}"><td colspan="6" class="text-center text-muted py-4">Você ainda não abriu nenhum chamado.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between mt-3">
+        <a class="btn btn-sm btn-outline-secondary" th:if="${chamados.hasPrevious()}" th:href="@{/meu/chamados(page=${chamados.number - 1})}">Anterior</a>
+        <span></span>
+        <a class="btn btn-sm btn-outline-secondary" th:if="${chamados.hasNext()}" th:href="@{/meu/chamados(page=${chamados.number + 1})}">Próxima</a>
+    </div>
+</div>
+</body>
+</html>

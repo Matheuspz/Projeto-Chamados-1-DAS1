@@ -20,6 +20,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -129,6 +130,13 @@ class ChamadoSegurancaTest {
     void senhaErradaRecebe401() throws Exception {
         mvc.perform(get("/chamados").with(httpBasic("cliente1@chamados.local", "errada123")))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void painelSemLoginRedirecionaParaLogin() throws Exception {
+        mvc.perform(get("/app/chamados"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
     }
 
     // ---- Cenário 3: recurso inexistente ----
