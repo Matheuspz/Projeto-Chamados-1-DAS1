@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/chamados/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/chamados/*/atribuir").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/chamados/*/status").hasAnyRole("ADMIN", "TECNICO")
+                        .requestMatchers(HttpMethod.PUT, "/chamados/fechar/*").hasAnyRole("ADMIN", "TECNICO")
 
                         // comentários
                         .requestMatchers(HttpMethod.GET, "/comentarios").hasRole("ADMIN")
